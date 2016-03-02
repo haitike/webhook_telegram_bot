@@ -6,9 +6,9 @@ import pytz
 from telegram import Updater, Bot
 from telegram.error import TelegramError
 from pytz import timezone, utc
-from haibot.database import Database
-from haibot.terraria import Terraria
-from haibot.lists import ListManager
+from dungeon_world.database import Database
+from dungeon_world.terraria import Terraria
+from dungeon_world.lists import ListManager
 
 try:
     import configparser  # Python 3
@@ -32,7 +32,7 @@ def save_user(func):
         user = update.message.from_user
         if not self.db.exists_document("user_data", query={"user_id" : user.id}):
             try:
-                if self.config.getint("haibot","BOT_OWNER") == user.id:
+                if self.config.getint("dungeon_world","BOT_OWNER") == user.id:
                     is_owner = True
                 else:
                     is_owner = False
@@ -53,38 +53,38 @@ def save_user(func):
         return func(self,bot,update,args)
     return wrapper
 
-class HaiBot(object):
+class Bot(object):
     translations = {}
     bot = None
 
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read( CONFIGFILE_PATH )
-        self.db = Database(self.config.get("haibot","MONGO_URL"), self.config.get("haibot","DB_NAME"))
+        self.db = Database(self.config.get("dungeon_world","MONGO_URL"), self.config.get("dungeon_world","DB_NAME"))
         self.db.create_index("user_data", "user_id")
         self.terraria = Terraria(self.db)
         self.lists = ListManager(self.db)
 
         #LANGUAGE STUFF
-        self.language_list = os.listdir(self.config.get("haibot","LOCALE_DIR"))
+        self.language_list = os.listdir(self.config.get("dungeon_world","LOCALE_DIR"))
         for l in self.language_list:
-            self.translations[l] = gettext.translation("telegrambot", self.config.get("haibot","LOCALE_DIR"), languages=[l], fallback=True)
+            self.translations[l] = gettext.translation("telegrambot", self.config.get("dungeon_world","LOCALE_DIR"), languages=[l], fallback=True)
         try:
-            if self.config.get("haibot","LANGUAGE") in self.language_list:
-                translation_install(self.translations[self.config.get("haibot","LANGUAGE")])
+            if self.config.get("dungeon_world","LANGUAGE") in self.language_list:
+                translation_install(self.translations[self.config.get("dungeon_world","LANGUAGE")])
             else:
                 translation_install(self.translations[DEFAULT_LANGUAGE])
         except:
             translation_install(self.translations[DEFAULT_LANGUAGE])
 
         # bot INICIALIZATION
-        self.updater = Updater(token=self.config.get("haibot","TOKEN"))
+        self.updater = Updater(token=self.config.get("dungeon_world","TOKEN"))
         self.dispatcher = self.updater.dispatcher
         self.add_handlers()
 
         # Timezone Stuff
         try:
-            self.tzinfo = timezone(self.config.get("haibot","TIMEZONE"))
+            self.tzinfo = timezone(self.config.get("dungeon_world","TIMEZONE"))
         except:
             self.tzinfo = pytz.utc
 
@@ -101,9 +101,9 @@ class HaiBot(object):
         WebhookHandler.do_GET = do_GET
 
         self.set_webhook()
-        self.update_queue = self.updater.start_webhook(self.config.get("haibot","IP"),
-                                                       self.config.getint("haibot","PORT"),
-                                                       self.config.get("haibot","TOKEN"))
+        self.update_queue = self.updater.start_webhook(self.config.get("dungeon_world","IP"),
+                                                       self.config.getint("dungeon_world","PORT"),
+                                                       self.config.get("dungeon_world","TOKEN"))
         self.updater.idle()
         self.cleaning()
 
@@ -114,8 +114,8 @@ class HaiBot(object):
         logger.info("Finished program.")
 
     def set_webhook(self):
-        bot = Bot(token=self.config.get("haibot","TOKEN"))  #try
-        s = bot.setWebhook(self.config.get("haibot","WEBHOOK_URL") + "/" + self.config.get("haibot","TOKEN"))
+        bot = Bot(token=self.config.get("dungeon_world","TOKEN"))  #try
+        s = bot.setWebhook(self.config.get("dungeon_world","WEBHOOK_URL") + "/" + self.config.get("dungeon_world","TOKEN"))
         if s:
             logger.info("webhook setup worked")
         else:
@@ -123,7 +123,7 @@ class HaiBot(object):
         return s
 
     def disable_webhook(self):
-        bot = Bot(token=self.config.get("haibot","TOKEN"))  #try
+        bot = Bot(token=self.config.get("dungeon_world","TOKEN"))  #try
         s = bot.setWebhook("")
         if s:
             logger.info("webhook was disabled")
@@ -364,8 +364,8 @@ class HaiBot(object):
             if args[0] == "language" or args[0] == "l":
                 if args[1] in self.language_list:
                     try:
-                        self.config.set("haibot","LANGUAGE", args[1] )
-                        translation_install(self.translations[self.config.get("haibot","LANGUAGE")])
+                        self.config.set("dungeon_world","LANGUAGE", args[1] )
+                        translation_install(self.translations[self.config.get("dungeon_world","LANGUAGE")])
                         self.send_message(bot, update.message.chat_id, _("Language changed to %s") % (args[1]))
                         logger.info("Language was changed to %s" % (args[1]))
                     except:

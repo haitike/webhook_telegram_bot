@@ -1,7 +1,7 @@
-from haibot.haibot import HaiBot
+from dungeon_world.bot import Bot
 
 def main():
-    bot = HaiBot()
+    bot = Bot()
     bot.start_polling_loop()
 
 if __name__ == '__main__':

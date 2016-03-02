@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import pytz
-from haibot.models import TerrariaStatus, TerrariaMilestone
+from dungeon_world.models import TerrariaStatus, TerrariaMilestone
 
 class Terraria(object):
     def __init__(self, db):
