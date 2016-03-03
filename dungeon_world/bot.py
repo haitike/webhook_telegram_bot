@@ -1,28 +1,18 @@
 from __future__ import absolute_import
 from gettext import gettext as _
-import sys
+import os
 import logging
 import pytz
+import configparser
 from datetime import datetime
 from telegram import Updater
 from telegram.error import TelegramError
-from pytz import timezone, utc
+from pytz import timezone
 from dungeon_world.database import Database
-
-try:
-    import configparser  # Python 3
-except ImportError:
-    import ConfigParser as configparser  # Python 2
 
 CONFIGFILE_PATH = "data/config.cfg"
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bot_log")
-
-def translation_install(translation): # Comnpability with both python 2 / 3
-    kwargs = {}
-    if sys.version < '3':
-        kwargs['unicode'] = True
-    translation.install(**kwargs)
 
 class Bot(object):
     translations = {}
@@ -31,19 +21,28 @@ class Bot(object):
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read( CONFIGFILE_PATH )
-        self.db = Database(self.config.get("dungeon_world","MONGO_URL"), self.config.get("dungeon_world","DB_NAME"))
+        self.db = Database(self.get_bot_conf("MONGO_URL"), self.get_bot_conf("DB_NAME"))
 
-        #self.db.create_index("user_data", "user_id") # REMEMBER TO ADD INDEXES FOR SPEED
+        #self.db.create_index("collection", "key") # REMEMBER TO ADD INDEXES FOR SPEED
         # i18n BLOCK (See haibot) / add system locale identification) / import gettext, os / config.cfg language, localedir / command_language
 
-        self.updater = Updater(token=self.config.get("dungeon_world","TOKEN"))
+        self.updater = Updater(token=self.get_bot_conf("TOKEN"))
         self.dispatcher = self.updater.dispatcher
         self.add_handlers()
 
         try:
-            self.tzinfo = timezone(self.config.get("dungeon_world","TIMEZONE"))
+            self.tzinfo = timezone(self.get_bot_conf("TIMEZONE"))
         except:
             self.tzinfo = pytz.utc
+
+    def get_bot_conf(self, value):
+        return self.config["bot"][value]
+
+    def get_env_conf(self, value, default_value=None):
+        if default_value:
+            return os.environ.get(self.config["env"][value], default_value)
+        else:
+            return os.environ.get(self.config["env"][value])
 
     def start_polling_loop(self):
         self.disable_webhook()
@@ -53,9 +52,9 @@ class Bot(object):
 
     def start_webhook_server(self):
         self.set_webhook()
-        self.update_queue = self.updater.start_webhook(self.config.get("dungeon_world","IP"),
-                                                       self.config.getint("dungeon_world","PORT"),
-                                                       self.config.get("dungeon_world","TOKEN"))
+        self.update_queue = self.updater.start_webhook(self.get_bot_conf("IP"),
+                                                       int(self.get_bot_conf("PORT")),
+                                                       self.get_bot_conf("TOKEN"))
         self.updater.idle()
         self.cleaning()
 
@@ -63,7 +62,7 @@ class Bot(object):
         logger.info("Finished program.")
 
     def set_webhook(self):
-        s = self.updater.bot.setWebhook(self.config.get("dungeon_world","WEBHOOK_URL") + "/" + self.config.get("dungeon_world","TOKEN"))
+        s = self.updater.bot.setWebhook(self.get_bot_conf("WEBHOOK_URL") + "/" + self.get_bot_conf("TOKEN"))
         if s:
             logger.info("webhook setup worked")
         else:
