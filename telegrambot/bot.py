@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from gettext import gettext as _
 import os
 import logging
