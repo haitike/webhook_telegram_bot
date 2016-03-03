@@ -21,7 +21,7 @@ class Bot(object):
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read( CONFIGFILE_PATH )
-        self.db = Database(self.get_bot_conf("MONGO_URL"), self.get_bot_conf("DB_NAME"))
+        self.db = Database(self.get_env_conf("MONGO_URL", None), self.get_bot_conf("DB_NAME"))
 
         #self.db.create_index("collection", "key") # REMEMBER TO ADD INDEXES FOR SPEED
         # i18n BLOCK (See haibot) / add system locale identification) / import gettext, os / config.cfg language, localedir / command_language
@@ -52,8 +52,8 @@ class Bot(object):
 
     def start_webhook_server(self):
         self.set_webhook()
-        self.update_queue = self.updater.start_webhook(self.get_bot_conf("IP"),
-                                                       int(self.get_bot_conf("PORT")),
+        self.update_queue = self.updater.start_webhook(self.get_env_conf("IP","127.0.0.1"),
+                                                       int(self.get_env_conf("PORT","8080")),
                                                        self.get_bot_conf("TOKEN"))
         self.updater.idle()
         self.cleaning()
