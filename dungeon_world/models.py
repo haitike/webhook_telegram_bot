@@ -28,15 +28,9 @@ class TemporalExample(BaseModel):
         self.date = date
         self.is_admin = is_admin
 
-    def get_info_message(self, with_date=False):
-        text= ""
-
-        if with_date:
-            fdate = self.date.strftime("%d/%m/%y %H:%M")
-            text+= "[%s] " % fdate
+    def __str__(self):
+        fdate = self.date.strftime("%d/%m/%y %H:%M")
         if self.status:
-            text+= _("%s is On") % (self.user)
+            return _("[%s] %s is On") % (fdate , self.user)
         else:
-            text+= _("%s is On")  % (self.user)
-
-        return text
+            return _("[%s] %s is Off") % (fdate , self.user)
