@@ -1,7 +1,11 @@
-A Telegram bot written in Python 3 for role-playing in telegram groups using the Dungeon World Ruleset.
+This is a basic Telegram Bot writted on Python 3. It can be executed using the webhook feature on Openshift hosting. It can also be executed in polling too. This example uses pymongo too.
+
 
 Instructions:
 - Raname data/config-default.cfg to data/config.cfg
 - Fill the token value (talk to BodFather in telegram).
-- If you are going to use a webhook fill the webhook_url.
-- Use main.py for polling. For the webhook use the app.py.
+- If you are going to use a webhook on telegram just fill the webhook_url with your openshift app url.
+
+How to run:
+- Webhook: Clone this repository as a openshift app, the app.py file is prepared for that. 
+- Polling: Execute main.py
