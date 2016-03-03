@@ -17,6 +17,6 @@ except IOError:
 
 
 #  main():
-from dungeon_world.bot import Bot
+from telegrambot.bot import Bot
 bot = Bot()
 bot.start_webhook_server()

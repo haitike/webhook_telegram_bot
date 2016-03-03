@@ -8,7 +8,6 @@ from datetime import datetime
 from telegram import Updater
 from telegram.error import TelegramError
 from pytz import timezone
-from dungeon_world.database import Database
 
 CONFIGFILE_PATH = "data/config.cfg"
 logging.basicConfig(level=logging.INFO)
@@ -21,10 +20,6 @@ class Bot(object):
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read( CONFIGFILE_PATH )
-        self.db = Database(self.get_env_conf("MONGO_URL", None), self.get_bot_conf("DB_NAME"))
-
-        #self.db.create_index("collection", "key") # REMEMBER TO ADD INDEXES FOR SPEED
-        # i18n BLOCK (See haibot) / add system locale identification) / import gettext, os / config.cfg language, localedir / command_language
 
         self.updater = Updater(token=self.get_bot_conf("TOKEN"))
         self.dispatcher = self.updater.dispatcher
